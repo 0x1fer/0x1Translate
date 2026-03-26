@@ -22,7 +22,7 @@ class TurengAPI:
                 response.raise_for_status()
 
         except requests.exceptions.RequestException as e:
-                # İnternet yoksa, site çökmüşse veya timeout olursa burası çalışır.
+                # This block runs if there is no internet, the site is down, or a timeout occurs.
                 return [f"Hata: Tureng'e bağlanılamadı. Detay: {e}"]
 
 
