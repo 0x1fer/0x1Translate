@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1230</width>
+    <height>727</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* --- ANA GÖVDE: BEYAZ KART VE GÖLGE --- */
+QWidget#containerWidget {
+    background-color: white;
+    border-radius: 15px; /* Köşeleri yuvarlatır */
+    border: 1px solid #e0e0e0; /* İnce, açık gri kenarlık */
+}
+
+/* --- DİL SEÇİMİ VE BUTONLAR --- */
+QComboBox {
+    background-color: transparent;
+    color: #444;
+    border: none;
+    font-size: 14px;
+    padding: 10px;
+}
+
+QPushButton {
+    background-color: transparent;
+    color: #888;
+    border: none;
+    font-size: 14px;
+    padding: 10px;
+}
+
+QPushButton:hover {
+    color: #333;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+}
+
+/* --- METİN ALANLARI --- */
+QTextEdit, QTextBrowser {
+    background-color: transparent;
+    color: #333;
+    border: none;
+    font-size: 15px;
+    font-family: &quot;Segoe UI&quot;, sans-serif; /* Pürüzsüz, modern bir font */
+    padding: 15px;
+}
+
+/* Metin alanları için açık gri kenarlıklar */
+QTextEdit {
+    border-right: 1px solid #f0f0f0; /* Sol kutuyu ayırmak için */
+}
+
+/* Odaklanıldığında minimal bir parıltı */
+QTextEdit:focus {
+    color: #000;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QStackedWidget" name="stackedWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>60</y>
+      <width>1231</width>
+      <height>661</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <widget class="QWidget" name="page">
+     <widget class="QPushButton" name="turengTranslateBtn">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>60</y>
+        <width>101</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>-1</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton {
+    background-color: #2D8CFF;
+    color: white;
+    border-radius: 8px; /* Köşeleri yuvarlatır */
+    padding: 8px 16px;
+    font-weight: bold;
+    border: none;
+}
+QPushButton:hover {
+    background-color: #1A73E8; /* Üzerine gelince rengi koyulaşır */
+}</string>
+      </property>
+      <property name="text">
+       <string>Translate</string>
+      </property>
+      <property name="autoDefault">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="turengInput">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>60</y>
+        <width>261</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="turengResults">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>130</y>
+        <width>501</width>
+        <height>371</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>-1</pointsize>
+       </font>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>60</y>
+        <width>101</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>25</pointsize>
+        <kerning>true</kerning>
+       </font>
+      </property>
+      <property name="text">
+       <string>Word :</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_3">
+     <widget class="QTextEdit" name="translateInput">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>80</y>
+        <width>581</width>
+        <height>561</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="translateOutput">
+      <property name="geometry">
+       <rect>
+        <x>630</x>
+        <y>80</y>
+        <width>581</width>
+        <height>561</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>-1</pointsize>
+       </font>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="inputBox">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>40</y>
+        <width>521</width>
+        <height>26</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="outputBox">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>40</y>
+        <width>521</width>
+        <height>26</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="reverseButton">
+      <property name="geometry">
+       <rect>
+        <x>605</x>
+        <y>40</y>
+        <width>41</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PushButton</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="inputVoiceBtn">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>580</y>
+        <width>61</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PushButton</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="outputVoiceBtn">
+      <property name="geometry">
+       <rect>
+        <x>1140</x>
+        <y>580</y>
+        <width>61</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PushButton</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_2"/>
+   </widget>
+   <widget class="QPushButton" name="btnTureng">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>241</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Noto Sans Avestan</family>
+      <pointsize>-1</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Tureng</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnTranslate">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>0</y>
+      <width>241</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>-1</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Translate</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnMyWords">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>0</y>
+      <width>241</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>-1</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>My Words</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

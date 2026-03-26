@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1230</width>
+    <height>727</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Translator</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+/* ====== GLOBAL UYGULAMA STİLİ (KOYU TEMA) ====== */
+
+/* --- ANA PENCERE ARKA PLANI --- */
+QMainWindow, QWidget#centralwidget {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 #1a1a2e, stop:0.5 #16213e, stop:1 #1a1a2e);
+}
+
+QStackedWidget {
+    background: transparent;
+}
+
+/* --- NAVİGASYON BUTONLARI --- */
+QPushButton#btnTureng, QPushButton#btnTranslate, QPushButton#btnMyWords {
+    background-color: rgba(30, 30, 50, 0.8);
+    color: #a0a4b0;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 14px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    font-weight: bold;
+    padding: 12px 20px;
+    border-radius: 0px;
+}
+
+QPushButton#btnTureng:hover, QPushButton#btnTranslate:hover, QPushButton#btnMyWords:hover {
+    background-color: rgba(40, 40, 65, 0.9);
+    color: #6c9fff;
+    border-bottom: 3px solid #6c9fff;
+    border-radius: 0px;
+}
+
+/* --- GENEL METİN ALANLARI --- */
+QTextEdit, QTextBrowser {
+    background-color: transparent;
+    color: #e0e0e0;
+    border: none;
+    font-size: 15px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    padding: 15px;
+}
+
+/* --- GENEL LINE EDIT --- */
+QLineEdit {
+    background-color: #2b2b3d;
+    color: #e0e0e0;
+    border: 1px solid #3a3a50;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    padding: 8px 16px;
+}
+
+QLineEdit:focus {
+    border: 2px solid #6c9fff;
+}
+
+/* --- GENEL COMBOBOX --- */
+QComboBox {
+    background-color: transparent;
+    color: #a0a4b0;
+    border: none;
+    font-size: 14px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    padding: 6px 12px;
+}
+
+/* --- GENEL LABEL --- */
+QLabel {
+    color: #e0e0e0;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    background: transparent;
+}
+
+/* --- STATUS BAR --- */
+QStatusBar {
+    background-color: rgba(20, 20, 35, 0.8);
+    color: #a0a4b0;
+    font-size: 12px;
+    border-top: 1px solid #2a2a40;
+}
+   </string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QStackedWidget" name="stackedWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>60</y>
+      <width>1231</width>
+      <height>661</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <widget class="QWidget" name="page">
+     <property name="styleSheet">
+      <string notr="true">
+/* --- TURENG SAYFA STİLİ (KOYU TEMA) --- */
+QWidget#page {
+    background: transparent;
+}
+
+/* --- ARAMA KARTI --- */
+QWidget#turengSearchCard {
+    background-color: #2b2b3d;
+    border-radius: 12px;
+    border: 1px solid #3a3a50;
+}
+
+/* --- ARAMA INPUT --- */
+QLineEdit#turengInput {
+    background-color: transparent;
+    color: #e0e0e0;
+    border: none;
+    border-bottom: 2px solid #3a3a50;
+    border-radius: 0px;
+    font-size: 16px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    padding: 12px 20px;
+}
+
+QLineEdit#turengInput:focus {
+    border: none;
+    border-bottom: 2px solid #6c9fff;
+}
+
+/* --- TRANSLATE BUTONU --- */
+QPushButton#turengTranslateBtn {
+    background-color: #4a7fd4;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-weight: bold;
+    font-size: 14px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    border: none;
+}
+
+QPushButton#turengTranslateBtn:hover {
+    background-color: #6c9fff;
+    border-radius: 8px;
+}
+
+/* --- SONUÇ KARTI --- */
+QWidget#turengResultCard {
+    background-color: #2b2b3d;
+    border-radius: 12px;
+    border: 1px solid #3a3a50;
+}
+
+QTextBrowser#turengResults {
+    background-color: transparent;
+    color: #e0e0e0;
+    border: none;
+    font-size: 15px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    padding: 16px 20px;
+}
+
+/* --- BAŞLIK LABEL --- */
+QLabel#label {
+    color: #6c9fff;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    font-weight: bold;
+    background: transparent;
+}
+      </string>
+     </property>
+     <widget class="QWidget" name="turengSearchCard" native="true">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>30</y>
+        <width>990</width>
+        <height>80</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>42</y>
+        <width>120</width>
+        <height>50</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>22</pointsize>
+        <bold>true</bold>
+        <kerning>true</kerning>
+       </font>
+      </property>
+      <property name="text">
+       <string>Word :</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="turengInput">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>45</y>
+        <width>580</width>
+        <height>45</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="placeholderText">
+       <string>Search a word...</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="turengTranslateBtn">
+      <property name="geometry">
+       <rect>
+        <x>870</x>
+        <y>45</y>
+        <width>220</width>
+        <height>45</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>-1</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>🔍  Translate</string>
+      </property>
+      <property name="autoDefault">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QWidget" name="turengResultCard" native="true">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>130</y>
+        <width>990</width>
+        <height>490</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="turengResults">
+      <property name="geometry">
+       <rect>
+        <x>122</x>
+        <y>132</y>
+        <width>986</width>
+        <height>486</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>-1</pointsize>
+       </font>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_3">
+     <property name="styleSheet">
+      <string notr="true">
+/* --- SAYFA ARKA PLANI (KOYU TEMA) --- */
+QWidget#page_3 {
+    background: transparent;
+}
+
+/* --- DİL SEÇİM COMBOBOX --- */
+QComboBox#inputBox, QComboBox#outputBox {
+    background-color: #2b2b3d;
+    color: #c0c4d0;
+    border: 1.5px solid #3a3a50;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    font-weight: 600;
+    padding: 8px 14px;
+}
+
+QComboBox#inputBox:hover, QComboBox#outputBox:hover {
+    border: 1.5px solid #6c9fff;
+    color: #6c9fff;
+}
+
+QComboBox#inputBox::drop-down, QComboBox#outputBox::drop-down {
+    border: none;
+    width: 24px;
+    subcontrol-position: center right;
+    padding-right: 8px;
+}
+
+QComboBox#inputBox::down-arrow, QComboBox#outputBox::down-arrow {
+    image: none;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #a0a4b0;
+    margin-right: 6px;
+}
+
+QComboBox#inputBox QAbstractItemView, QComboBox#outputBox QAbstractItemView {
+    background-color: #2b2b3d;
+    color: #c0c4d0;
+    border: 1px solid #3a3a50;
+    border-radius: 8px;
+    padding: 4px;
+    selection-background-color: #3a4a6b;
+    selection-color: #6c9fff;
+}
+
+/* --- SWAP BUTONU --- */
+QPushButton#reverseButton {
+    background-color: transparent;
+    color: #a0a4b0;
+    border: none;
+    font-size: 18px;
+    border-radius: 18px;
+}
+
+QPushButton#reverseButton:hover {
+    background-color: #3a3a50;
+    border-radius: 18px;
+}
+
+/* --- GİRİŞ KARTI --- */
+QWidget#inputCardWidget {
+    background-color: #2b2b3d;
+    border-radius: 12px;
+    border: 1px solid #3a3a50;
+}
+
+/* --- ÇIKIŞ KARTI --- */
+QWidget#outputCardWidget {
+    background-color: #242436;
+    border-radius: 12px;
+    border: 1px solid #3a3a50;
+}
+
+/* --- METİN ALANLARI --- */
+QTextEdit#translateInput {
+    background-color: transparent;
+    color: #e0e0e0;
+    border: none;
+    font-size: 16px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    padding: 16px 20px;
+}
+
+QTextBrowser#translateOutput {
+    background-color: transparent;
+    color: #e0e0e0;
+    border: none;
+    font-size: 16px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    padding: 16px 20px;
+}
+
+/* --- SES BUTONLARI --- */
+QPushButton#inputVoiceBtn, QPushButton#outputVoiceBtn {
+    background-color: transparent;
+    color: #8a8e9a;
+    border: none;
+    font-size: 18px;
+    border-radius: 18px;
+}
+
+QPushButton#inputVoiceBtn:hover, QPushButton#outputVoiceBtn:hover {
+    background-color: #3a3a50;
+    border-radius: 18px;
+}
+
+/* --- KARAKTER SAYACI --- */
+QLabel#charCountLabel {
+    color: #6a6e7a;
+    font-size: 13px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    background-color: transparent;
+    border: none;
+}
+      </string>
+     </property>
+     <widget class="QComboBox" name="inputBox">
+      <property name="geometry">
+       <rect>
+        <x>420</x>
+        <y>10</y>
+        <width>160</width>
+        <height>36</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>English</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Turkish</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QPushButton" name="reverseButton">
+      <property name="geometry">
+       <rect>
+        <x>600</x>
+        <y>10</y>
+        <width>36</width>
+        <height>36</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>-1</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>⇆</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="outputBox">
+      <property name="geometry">
+       <rect>
+        <x>650</x>
+        <y>10</y>
+        <width>160</width>
+        <height>36</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>English</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QWidget" name="inputCardWidget" native="true">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>60</y>
+        <width>565</width>
+        <height>560</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="translateInput">
+      <property name="geometry">
+       <rect>
+        <x>42</x>
+        <y>62</y>
+        <width>561</width>
+        <height>495</height>
+       </rect>
+      </property>
+      <property name="placeholderText">
+       <string>Type or paste text to translate</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="inputVoiceBtn">
+      <property name="geometry">
+       <rect>
+        <x>52</x>
+        <y>572</y>
+        <width>36</width>
+        <height>36</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>🔊</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="charCountLabel">
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>576</y>
+        <width>80</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>0 / 500</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QWidget" name="outputCardWidget" native="true">
+      <property name="geometry">
+       <rect>
+        <x>625</x>
+        <y>60</y>
+        <width>565</width>
+        <height>560</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="translateOutput">
+      <property name="geometry">
+       <rect>
+        <x>627</x>
+        <y>62</y>
+        <width>561</width>
+        <height>495</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>-1</pointsize>
+       </font>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="outputVoiceBtn">
+      <property name="geometry">
+       <rect>
+        <x>637</x>
+        <y>572</y>
+        <width>36</width>
+        <height>36</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>🔊</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_2">
+     <property name="styleSheet">
+      <string notr="true">
+QWidget#page_2 {
+    background: transparent;
+}
+
+QWidget#myWordsCard {
+    background-color: #2b2b3d;
+    border-radius: 12px;
+    border: 1px solid #3a3a50;
+}
+
+QLabel#myWordsPlaceholder {
+    color: #6a6e7a;
+    font-size: 18px;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    background: transparent;
+}
+      </string>
+     </property>
+     <widget class="QWidget" name="myWordsCard" native="true">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>30</y>
+        <width>990</width>
+        <height>590</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="myWordsPlaceholder">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>280</y>
+        <width>990</width>
+        <height>60</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>📚  Your saved words will appear here</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="btnTureng">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>241</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Segoe UI</family>
+      <pointsize>-1</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>📖  Tureng</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnTranslate">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>0</y>
+      <width>241</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Segoe UI</family>
+      <pointsize>-1</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>🌐  Translate</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnMyWords">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>0</y>
+      <width>241</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Segoe UI</family>
+      <pointsize>-1</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>📝  My Words</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
