@@ -1,1 +1,24 @@
-PySide6
+# Core GUI
+PyQt6>=6.6
+
+# Translation / dictionary back-ends
+deepl>=1.16          # DeepL API client (used by app/APIs/deeplTranslate.py)
+requests>=2.31       # HTTP for Tureng scraper (app/APIs/tureng.py)
+beautifulsoup4>=4.12 # HTML parsing for Tureng
+
+# Environment
+python-dotenv>=1.0   # loads DEEPL_API_KEY from .env
+
+# Global hotkeys + Wayland-safe cursor tracking
+# Requires user to be in the 'input' group (`sudo usermod -aG input $USER`).
+evdev>=1.6
+
+# Optional: only required for the .xlsx export in "Kelimelerim"
+openpyxl>=3.1
+
+# ---------------------------------------------------------------------------
+# System packages (install via pacman / apt / dnf, NOT pip):
+#   wl-clipboard   -- wl-paste used for native-Wayland clipboard access
+#   xclip          -- X11 PRIMARY/CLIPBOARD fallback
+#   xdotool        -- bootstrap cursor position before evdev tracks it
+# ---------------------------------------------------------------------------

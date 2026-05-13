@@ -1,87 +1,75 @@
-# This file is used to ignore files which are generated
-# ----------------------------------------------------------------------------
-
-*~
-*.autosave
-*.a
-*.core
-*.moc
-*.o
-*.obj
-*.orig
-*.rej
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
 *.so
-*.so.*
-*_pch.h.cpp
-*_resource.rc
-*.qm
-.#*
-*.*#
-core
-!core/
-tags
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+
+# Type checking / linting caches
+.mypy_cache/
+.pyright/
+.ruff_cache/
+.pytype/
+
+# Test / coverage artefacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# ---------------------------------------------------------------------------
+# Virtual environments
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+env/
+*venv/
+.qtcreator/
+
+# ---------------------------------------------------------------------------
+# Secrets & local data (NEVER commit)
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+words.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ---------------------------------------------------------------------------
+# IDE / editor
+# ---------------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 .DS_Store
 .directory
-*.debug
-Makefile*
-*.prl
-*.app
-moc_*.cpp
-ui_*.h
-qrc_*.cpp
 Thumbs.db
-*.res
-*.rc
-/.qmake.cache
-/.qmake.stash
 
-# qtcreator generated files
+# Claude Code local metadata
+.claude/
+
+# ---------------------------------------------------------------------------
+# Old Qt-Designer artefacts (kept ignored in case they reappear)
+# ---------------------------------------------------------------------------
 *.pro.user*
 *.qbs.user*
 CMakeLists.txt.user*
+form.ui.bak
+ui_form.py
 
-# xemacs temporary files
-*.flc
-
-# Vim temporary files
-.*.swp
-
-# Visual Studio generated files
-*.ib_pdb_index
-*.idb
-*.ilk
-*.pdb
-*.sln
-*.suo
-*.vcproj
-*vcproj.*.*.user
-*.ncb
-*.sdf
-*.opensdf
-*.vcxproj
-*vcxproj.*
-
-# MinGW generated files
-*.Debug
-*.Release
-
-# Python byte code
-*.pyc
-
-# Binaries
-# --------
-*.dll
-*.exe
-
-# Directories with generated files
-.moc/
-.obj/
-.pch/
-.rcc/
-.uic/
-/build*/
-.qtcreator/*venv/
-*venv/
-.venv/
-venv/
-.env
+PROMPT.md
