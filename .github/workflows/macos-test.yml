@@ -1,0 +1,46 @@
+# .github/workflows/macos-test.yml
+name: macOS PyQt6 Test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements.txt
+
+      - name: Uygulamayı başlat ve test et
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: |
+          python - <<'EOF'
+          import sys
+          from PyQt6.QtWidgets import QApplication
+          from PyQt6.QtCore import QTimer
+
+          app = QApplication(sys.argv)
+
+          try:
+              from app.main_window import MainWindow
+              window = MainWindow()
+              window.show()
+              print("OK: Pencere açıldı")
+          except Exception as e:
+              print(f"HATA: {type(e).__name__}: {e}")
+              sys.exit(1)
+
+          QTimer.singleShot(3000, app.quit)
+          sys.exit(app.exec())
+          EOF
