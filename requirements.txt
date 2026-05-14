@@ -10,15 +10,19 @@ beautifulsoup4>=4.12 # HTML parsing for Tureng
 python-dotenv>=1.0   # loads DEEPL_API_KEY from .env
 
 # Global hotkeys + Wayland-safe cursor tracking
-# Requires user to be in the 'input' group (`sudo usermod -aG input $USER`).
-evdev>=1.6
+# Linux:   evdev reads /dev/input/event* — user must be in the 'input' group
+#          (`sudo usermod -aG input $USER`).
+# Windows: pynput uses a Win32 keyboard hook — no admin rights needed.
+evdev>=1.6   ; sys_platform == "linux"
+pynput>=1.7.6 ; sys_platform == "win32"
 
 # Optional: only required for the .xlsx export in "Kelimelerim"
 openpyxl>=3.1
 
 # ---------------------------------------------------------------------------
-# System packages (install via pacman / apt / dnf, NOT pip):
+# Linux-only system packages (install via pacman / apt / dnf, NOT pip):
 #   wl-clipboard   -- wl-paste used for native-Wayland clipboard access
 #   xclip          -- X11 PRIMARY/CLIPBOARD fallback
 #   xdotool        -- bootstrap cursor position before evdev tracks it
+# Windows requires no system packages beyond Python itself.
 # ---------------------------------------------------------------------------

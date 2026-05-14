@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 
 from PyQt6.QtWidgets import (
@@ -13,12 +14,21 @@ from app.db.database import Database
 from app.tabs.dictionary_tab import DictionaryTab
 from app.tabs.translate_tab import TranslateTab
 from app.tabs.words_tab import WordsTab
-from app.overlay.selection_watcher import SelectionWatcher
-from app.overlay.popup_button import PopupButton
+from app.tabs.settings_tab import SettingsTab
 from app.overlay.popup_panel import PopupPanel
-from app.overlay import evdev_hooks
+from app.overlay import hotkey_hooks as hooks
 from app.config import CONFIG
 from app import styles
+from app.i18n import tr
+
+IS_LINUX = sys.platform.startswith("linux")
+
+if IS_LINUX:
+    from app.overlay.selection_watcher import SelectionWatcher
+    from app.overlay.popup_button import PopupButton
+else:
+    SelectionWatcher = None  # type: ignore
+    PopupButton = None       # type: ignore
 
 
 def _read_clipboard_text() -> str:
@@ -27,7 +37,7 @@ def _read_clipboard_text() -> str:
     the clipboard holds non-text content (e.g. an image), so callers can
     distinguish "no usable selection" from a real string.
     """
-    if os.environ.get("WAYLAND_DISPLAY"):
+    if IS_LINUX and os.environ.get("WAYLAND_DISPLAY"):
         try:
             # First check what mime-types are offered. If text/* isn't on
             # offer, wl-paste --no-newline would dump binary bytes and
@@ -87,7 +97,7 @@ class MainWindow(QMainWindow):
     def __init__(self, db: Database, parent=None):
         super().__init__(parent)
         self._db = db
-        self.setWindowTitle("TranslateApp")
+        self.setWindowTitle(tr("app_title"))
         self.resize(1200, 720)
         self.setMinimumSize(900, 600)
 
@@ -118,11 +128,12 @@ class MainWindow(QMainWindow):
         nav_layout.setContentsMargins(0, 0, 0, 0)
         nav_layout.setSpacing(0)
 
-        self._btn_dict      = QPushButton("📖  Sözlük")
-        self._btn_translate = QPushButton("🌐  Çeviri")
-        self._btn_words     = QPushButton("📝  Kelimelerim")
+        self._btn_dict      = QPushButton(tr("nav_dictionary"))
+        self._btn_translate = QPushButton(tr("nav_translate"))
+        self._btn_words     = QPushButton(tr("nav_words"))
+        self._btn_settings  = QPushButton(tr("nav_settings"))
 
-        for btn in (self._btn_dict, self._btn_translate, self._btn_words):
+        for btn in (self._btn_dict, self._btn_translate, self._btn_words, self._btn_settings):
             btn.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
             btn.setMinimumWidth(180)
             btn.setFixedHeight(56)
@@ -140,26 +151,28 @@ class MainWindow(QMainWindow):
         self._dict_tab      = DictionaryTab()
         self._translate_tab = TranslateTab()
         self._words_tab     = WordsTab(self._db)
+        self._settings_tab  = SettingsTab()
 
         self._stack.addWidget(self._dict_tab)
         self._stack.addWidget(self._translate_tab)
         self._stack.addWidget(self._words_tab)
+        self._stack.addWidget(self._settings_tab)
 
         # Status bar
         sb = QStatusBar()
         sb.setSizeGripEnabled(False)
         self.setStatusBar(sb)
-        self._status = QLabel("Hazır")
+        self._status = QLabel(tr("status_ready"))
         sb.addWidget(self._status)
 
     def _build_tray(self):
         self._tray = QSystemTrayIcon(self)
         self._tray.setIcon(_make_tray_icon())
-        self._tray.setToolTip("TranslateApp")
+        self._tray.setToolTip(tr("app_title"))
 
         menu = QMenu()
-        show_action = QAction("Göster / Gizle", self)
-        quit_action = QAction("Çıkış", self)
+        show_action = QAction(tr("tray_show_hide"), self)
+        quit_action = QAction(tr("tray_quit"), self)
         menu.addAction(show_action)
         menu.addSeparator()
         menu.addAction(quit_action)
@@ -171,27 +184,35 @@ class MainWindow(QMainWindow):
         self._tray.show()
 
     def _build_overlay(self):
-        self._watcher = SelectionWatcher(CONFIG["selection_poll_interval_ms"])
-        # Running under XWayland (xcb): popup windows can float freely with
-        # no transient-parent requirement. Using self as parent keeps them
-        # associated with the app (no separate taskbar entry, correct WM hints).
-        self._popup_btn   = PopupButton(self)
+        # Selection-watching + floating "Translate" button are Linux-only.
+        # Windows has no PRIMARY selection, so auto-detecting highlighted text
+        # isn't feasible; the user reaches the popup via the Ctrl+C+C hotkey.
+        if IS_LINUX:
+            self._watcher = SelectionWatcher(CONFIG["selection_poll_interval_ms"])
+            self._popup_btn = PopupButton(self)
+        else:
+            self._watcher = None
+            self._popup_btn = None
         self._popup_panel = PopupPanel(_tureng, _deepl, self) if _tureng else None
-        # evdev: reads /dev/input/event* directly, bypassing Wayland's focus
-        # restrictions. Provides global Ctrl+C+C detection and accurate cursor
-        # tracking (XWayland's view stops updating when a Wayland app is focused).
-        self._evdev = evdev_hooks.init(self)
+        # Global hotkey + cursor tracking. On Linux this reads /dev/input/event*
+        # (bypasses Wayland focus restrictions); on Windows it uses a pynput
+        # Win32 keyboard hook + QCursor.pos().
+        self._evdev = hooks.init(self)
 
     def _connect_signals(self):
         self._btn_dict.clicked.connect(lambda: self._set_active_tab(0))
         self._btn_translate.clicked.connect(lambda: self._set_active_tab(1))
         self._btn_words.clicked.connect(lambda: self._set_active_tab(2))
+        self._btn_settings.clicked.connect(lambda: self._set_active_tab(3))
 
         self._translate_tab.save_requested.connect(self._save_word)
         self._dict_tab.save_requested.connect(self._save_word)
+        self._settings_tab.settings_changed.connect(self._on_settings_changed)
 
-        self._watcher.text_selected.connect(self._on_text_selected)
-        self._popup_btn.translate_requested.connect(self._on_translate_requested)
+        if self._watcher is not None:
+            self._watcher.text_selected.connect(self._on_text_selected)
+        if self._popup_btn is not None:
+            self._popup_btn.translate_requested.connect(self._on_translate_requested)
 
         if self._popup_panel:
             self._popup_panel.save_requested.connect(self._save_word)
@@ -203,18 +224,19 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
     def _set_active_tab(self, index: int):
         self._stack.setCurrentIndex(index)
-        buttons = [self._btn_dict, self._btn_translate, self._btn_words]
+        buttons = [self._btn_dict, self._btn_translate, self._btn_words, self._btn_settings]
         for i, btn in enumerate(buttons):
             btn.setStyleSheet(styles.NAV_BUTTON_ACTIVE if i == index else styles.NAV_BUTTON)
 
     def _save_word(self, original: str, translation: str, source_lang: str):
         self._words_tab.add_word(original, translation, source_lang)
         preview = original[:30] + "…" if len(original) > 30 else original
-        self._status.setText(f"✓ '{preview}' kaydedildi.")
+        self._status.setText(tr("status_saved_preview", preview=preview))
 
     @pyqtSlot(str, int, int)
     def _on_text_selected(self, text: str, x: int, y: int):
-        self._popup_btn.show_near(text, x, y)
+        if self._popup_btn is not None:
+            self._popup_btn.show_near(text, x, y)
 
     @pyqtSlot(str, int, int)
     def _on_translate_requested(self, text: str, x: int, y: int):
@@ -261,7 +283,7 @@ class MainWindow(QMainWindow):
             self.activateWindow()
             return
 
-        x, y = evdev_hooks.get_cursor_pos()
+        x, y = hooks.get_cursor_pos()
         self._popup_panel.show_for(text, x, y)
 
     # ------------------------------------------------------------------
@@ -278,19 +300,46 @@ class MainWindow(QMainWindow):
             self._toggle_window()
 
     def _quit_app(self):
-        self._watcher.stop()
-        evdev_hooks.shutdown()
+        if self._watcher is not None:
+            self._watcher.stop()
+        hooks.shutdown()
         QApplication.quit()
 
     def closeEvent(self, event):
         event.ignore()
         self.hide()
         self._tray.showMessage(
-            "TranslateApp",
-            "Uygulama arka planda çalışmaya devam ediyor.",
+            tr("app_title"),
+            tr("tray_running_msg"),
             QSystemTrayIcon.MessageIcon.Information,
             2000,
         )
 
+    # ------------------------------------------------------------------
+    @pyqtSlot(dict)
+    def _on_settings_changed(self, new_settings: dict):
+        """User saved Settings → hot-reload DeepL client and global hotkey."""
+        # 1) DeepL: rebuild the API on the Translate tab + popup panel.
+        global _deepl
+        try:
+            from app.APIs.deeplTranslate import DeeplAPI
+            _deepl = DeeplAPI()
+        except ValueError:
+            _deepl = None
+        except Exception:
+            _deepl = None
+        self._translate_tab.reload_api()
+        if self._popup_panel is not None:
+            self._popup_panel.set_deepl_api(_deepl)
+
+        # 2) Hotkey: bounce the listener so it re-reads the modifier/trigger.
+        try:
+            self._evdev.double_ctrl_c.disconnect(self._on_ctrl_c_c)
+        except TypeError:
+            pass
+        self._evdev = hooks.reload_shortcut(self)
+        self._evdev.double_ctrl_c.connect(self._on_ctrl_c_c)
+
     def start_watcher(self):
-        self._watcher.start()
+        if self._watcher is not None:
+            self._watcher.start()

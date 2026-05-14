@@ -11,6 +11,7 @@ from PyQt6.QtGui import QFont
 
 from app.APIs.tureng import TurengAPI
 from app import styles
+from app.i18n import tr
 
 
 class _TurengWorker(QThread):
@@ -51,7 +52,7 @@ class DictionaryTab(QWidget):
         root.setSpacing(14)
 
         # Header
-        hdr = QLabel("📖  Sözlük")
+        hdr = QLabel(tr("dict_header"))
         hdr.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         hdr.setStyleSheet(f"color: {styles.C['accent']}; background: transparent;")
         root.addWidget(hdr)
@@ -61,7 +62,7 @@ class DictionaryTab(QWidget):
         search_row.setSpacing(10)
 
         self._input = QLineEdit()
-        self._input.setPlaceholderText("Türkçe veya İngilizce kelime arayın…")
+        self._input.setPlaceholderText(tr("dict_placeholder"))
         self._input.setMinimumHeight(42)
         search_row.addWidget(self._input, 1)
 
@@ -74,7 +75,7 @@ class DictionaryTab(QWidget):
         root.addLayout(search_row)
 
         # Status label
-        self._status = QLabel("Aramak için kelime yazın.")
+        self._status = QLabel(tr("dict_status_start"))
         self._status.setStyleSheet(f"color: {styles.C['text_dim']}; font-size: 12px; background: transparent;")
         root.addWidget(self._status)
 
@@ -103,7 +104,7 @@ class DictionaryTab(QWidget):
         else:
             self._timer.stop()
             self._results.clear()
-            self._status.setText("Aramak için kelime yazın.")
+            self._status.setText(tr("dict_status_start"))
 
     def _clear(self):
         self._input.clear()
@@ -114,7 +115,7 @@ class DictionaryTab(QWidget):
         if not word:
             return
         self._request_id += 1
-        self._status.setText("Aranıyor…")
+        self._status.setText(tr("dict_status_searching"))
         worker = _TurengWorker(self._api, word, self._request_id)
         worker.finished.connect(self._on_results)
         worker.error.connect(self._on_error)
@@ -133,16 +134,16 @@ class DictionaryTab(QWidget):
         if not results:
             self._last_results = []
             self._results.setHtml(
-                f"<p style='color:{col_dim};'><i>'{word}' için sonuç bulunamadı.</i></p>"
+                f"<p style='color:{col_dim};'><i>{tr('dict_no_result_for', word=word)}</i></p>"
             )
-            self._status.setText("Sonuç yok.")
+            self._status.setText(tr("dict_status_no_result"))
             return
 
         # Error strings from tureng.py start with "Hata:"
         if len(results) == 1 and results[0].startswith("Hata:"):
             self._last_results = []
             self._results.setHtml(f"<p style='color:{col_danger};'>{results[0]}</p>")
-            self._status.setText("Bağlantı hatası.")
+            self._status.setText(tr("dict_status_conn_err"))
             return
 
         # Cache for the anchor handler below.
@@ -158,7 +159,7 @@ class DictionaryTab(QWidget):
                 save_cell = (
                     f"<td style='padding:6px 12px; text-align:right;'>"
                     f"<a href='save:{i}' style='color:{col_success}; text-decoration:none; "
-                    f"font-weight:600;'>💾 Kaydet</a>"
+                    f"font-weight:600;'>{tr('dict_save_link')}</a>"
                     f"</td>"
                 )
                 rows_html += (
@@ -179,16 +180,16 @@ class DictionaryTab(QWidget):
         html = (
             f"<table width='100%' cellspacing='0' style='font-size:14px; border-collapse:collapse;'>"
             f"<tr style='background:{col_panel};'>"
-            f"<th style='padding:8px 12px; text-align:left; color:{col_dim};'>Kaynak</th>"
+            f"<th style='padding:8px 12px; text-align:left; color:{col_dim};'>{tr('dict_col_source')}</th>"
             f"<th></th>"
-            f"<th style='padding:8px 12px; text-align:left; color:{col_dim};'>Çeviri</th>"
+            f"<th style='padding:8px 12px; text-align:left; color:{col_dim};'>{tr('dict_col_translation')}</th>"
             f"<th></th>"
             f"</tr>"
             f"{rows_html}"
             f"</table>"
         )
         self._results.setHtml(html)
-        self._status.setText(f"{len(results)} sonuç bulundu.")
+        self._status.setText(tr("dict_status_results", n=len(results)))
 
     def _on_anchor_clicked(self, url):
         """Handle the per-row Save links (save:<index>)."""
@@ -208,10 +209,10 @@ class DictionaryTab(QWidget):
             return
         src, tgt = parts
         self.save_requested.emit(src.strip(), tgt.strip(), "TR-EN")
-        self._status.setText(f"✓ '{src.strip()}' kaydedildi.")
+        self._status.setText(tr("dict_status_saved_row", word=src.strip()))
 
     def _on_error(self, msg: str):
-        self._status.setText("Hata oluştu.")
+        self._status.setText(tr("dict_status_error"))
         col = styles.C["danger"]
         self._results.setHtml(f"<p style='color:{col};'>{msg}</p>")
 

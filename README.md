@@ -1,6 +1,6 @@
 # TranslateApp
 
-Linux için PyQt6 tabanlı masaüstü çeviri uygulaması. Sözlük (Tureng) ve çeviri (DeepL) servislerini tek bir arayüzde toplar, sistem genelinde metin yakalama overlay'i ile herhangi bir uygulamadan seçilen metni anında çevirir.
+PyQt6 tabanlı masaüstü çeviri uygulaması (Linux + Windows). Sözlük (Tureng) ve çeviri (DeepL) servislerini tek bir arayüzde toplar, sistem genelinde metin yakalama overlay'i ile seçilen metni anında çevirir.
 
 ---
 
@@ -21,11 +21,21 @@ Linux için PyQt6 tabanlı masaüstü çeviri uygulaması. Sözlük (Tureng) ve 
 
 ## Sistem gereksinimleri
 
-- **OS:** Linux (Arch / KDE Plasma 6 üzerinde test edildi)
 - **Python:** 3.11+
-- **Görüntü sunucu:** X11 veya Wayland (Wayland'de uygulama otomatik XWayland'e geçer)
+- **OS:** Linux (Arch / KDE Plasma 6 üzerinde test edildi) veya Windows 10/11
+- **Görüntü sunucu (Linux):** X11 veya Wayland (Wayland'de uygulama otomatik XWayland'e geçer)
 
-### Sistem paketleri (pacman / apt / dnf üzerinden)
+### Platform farkları
+
+| | Linux | Windows |
+|---|---|---|
+| Ctrl+C+C global kısayolu | ✅ (evdev) | ✅ (pynput Win32 hook) |
+| Tepsi simgesi & arka plan | ✅ | ✅ |
+| **Metin seçince otomatik 🌐 buton** | ✅ | ❌ — Windows'ta PRIMARY selection yok, popup yalnızca Ctrl+C+C ile açılır |
+| Özel sistem paketi | wl-clipboard / xclip / xdotool | yok |
+| Özel yetki | `input` grubu üyeliği | yok |
+
+### Linux: sistem paketleri (pacman / apt / dnf)
 
 ```bash
 # Arch
@@ -39,7 +49,7 @@ sudo pacman -S wl-clipboard xclip xdotool python-evdev
 | `xdotool` | İlk açılışta cursor pozisyonunu öğrenmek için |
 | `python-evdev` | Global Ctrl+C+C ve Wayland-bağımsız cursor takibi |
 
-### Yetki gereksinimi
+### Linux: yetki gereksinimi
 
 evdev `/dev/input/event*` cihazlarını doğrudan okur. Kullanıcının `input` grubunda olması gerekir:
 
@@ -48,9 +58,17 @@ sudo usermod -aG input $USER
 # Sonra çıkış yapıp tekrar giriş yapın (veya `newgrp input`)
 ```
 
+### Windows: özel gereksinim yok
+
+- Sistem paketi gerekmez (`wl-clipboard`, `xclip`, vs. Linux'a özeldir).
+- Yönetici (admin) yetkisi gerekmez — `pynput` kullanıcı modu Win32 keyboard hook'u kullanır.
+- Antivirüs / Defender bazen klavye hook'lu uygulamaları uyarı olarak işaretleyebilir.
+
 ---
 
 ## Kurulum
+
+### Linux
 
 ```bash
 git clone <repo-url> translateV2
@@ -60,6 +78,19 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+### Windows (PowerShell)
+
+```powershell
+git clone <repo-url> translateV2
+cd translateV2
+
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+`requirements.txt` platform-koşullu marker'lar kullanır: Linux'ta yalnızca `evdev`, Windows'ta yalnızca `pynput` kurulur.
 
 ### DeepL API anahtarı
 
@@ -76,16 +107,18 @@ DEEPL_API_KEY=your_api_key_here
 ## Çalıştırma
 
 ```bash
-python main.py
+python main.py        # Linux
+py main.py            # Windows (veya `python main.py`)
 ```
 
-Uygulama açılırken terminale şunu yazmalı:
+Uygulama açılırken terminale platforma göre şu satırlardan biri yazılır:
 
 ```
-[evdev] watching N keyboard(s) and M mouse device(s)
+[evdev] watching N keyboard(s) and M mouse device(s)   # Linux
+[hotkey] Win32 global hotkey listener active           # Windows
 ```
 
-Bu satır görünmüyorsa `input` grup üyeliği aktif değildir (yukarıdaki yetki bölümüne bakın).
+Linux'ta evdev satırı görünmüyorsa `input` grup üyeliği aktif değildir (yukarıdaki yetki bölümüne bakın). Windows'ta `pynput not installed` mesajı görünüyorsa `pip install pynput` çalıştırın.
 
 ---
 
@@ -98,13 +131,22 @@ Bu satır görünmüyorsa `input` grup üyeliği aktif değildir (yukarıdaki ye
 - **📖 Sözlük** — kelime yazın, Tureng'den TR↔EN sonuçlar gelir, her satırdaki `💾 Kaydet` ile veritabanına eklenir.
 - **🌐 Çeviri** — sol panele metin yazın; dil seçicilerinin ortasındaki `⇄` swap butonu metni de değiştirir. Save ile çeviri kaydedilir.
 - **📝 Kelimelerim** — kayıtlı tüm çeviriler. `➕ Ekle` ile manuel kelime ekleyin, `📥 Dışa Aktar` ile JSON/CSV/Excel'e aktarın.
+- **⚙️ Ayarlar** — klavye kısayolu (modifier + tetik harfi), DeepL API anahtarı ve uygulama dili (TR/EN). Ayarlar `settings.json` dosyasına kaydedilir; kısayol ve API anahtarı anında, dil değişikliği yeniden başlatma sonrası devreye girer.
 
 ### Overlay (en kritik bileşen)
 
+**Linux:**
 1. Herhangi bir uygulamada metin seçin
 2. Birkaç ms sonra cursor yakınında küçük `🌐` butonu çıkar
 3. Butona tıklayın → ortada büyük çeviri paneli açılır
-4. Pano genelinde Ctrl+C'ye iki kez bas → seçim yoksa ana pencere açılır, varsa popup çıkar
+4. Ya da metni kopyaladıktan sonra Ctrl+C'ye bir kez daha bas (Ctrl+C+C) → clipboard'taki metin popup'ta açılır
+
+**Windows:**
+1. Herhangi bir uygulamada metin seçin ve **Ctrl+C** ile kopyalayın
+2. Hemen ardından **bir kez daha Ctrl+C** (toplam Ctrl+C+C) → popup açılır
+3. Clipboard boşsa veya metin değilse Ctrl+C+C ana uygulamayı öne getirir
+
+> Not: Windows'ta PRIMARY selection olmadığı için "metni seçince otomatik buton" davranışı yoktur — sadece Ctrl+C+C kısayolu vardır.
 
 Popup paneli:
 - Tek kelime seçilmişse otomatik **Dictionary** sekmesi
@@ -121,12 +163,15 @@ Popup paneli:
 translateV2/
 ├── main.py                       # Giriş noktası — QT_QPA_PLATFORM=xcb forced
 ├── words.db                      # SQLite, runtime'da oluşturulur
-├── .env                          # DEEPL_API_KEY
+├── settings.json                 # Kullanıcı ayarları (kısayol, dil, API key)
+├── .env                          # DEEPL_API_KEY (Ayarlar > API key boş bırakılırsa fallback)
 └── app/
     ├── config.py                 # Path/timing sabitleri
+    ├── settings.py               # settings.json yükle/kaydet
+    ├── i18n.py                   # TR / EN sözlüğü, tr() fonksiyonu
     ├── styles.py                 # Merkezi QSS dark tema
     ├── widgets.py                # Paylaşılan widget'lar (BoundedComboBox)
-    ├── main_window.py            # 3 sekme + tray + overlay orkestratörü
+    ├── main_window.py            # 4 sekme + tray + overlay orkestratörü
     ├── APIs/
     │   ├── tureng.py             # Tureng HTML scraper
     │   └── deeplTranslate.py     # DeepL wrapper
@@ -136,12 +181,15 @@ translateV2/
     ├── tabs/
     │   ├── dictionary_tab.py
     │   ├── translate_tab.py
-    │   └── words_tab.py
+    │   ├── words_tab.py
+    │   └── settings_tab.py       # Klavye kısayolu, API key, dil
     └── overlay/
-        ├── selection_watcher.py  # PRIMARY selection polling
-        ├── evdev_hooks.py        # /dev/input/event* — Ctrl+C+C + cursor pos
-        ├── popup_button.py       # Selection sonrası küçük buton
-        └── popup_panel.py        # Frameless çeviri paneli
+        ├── hotkey_hooks.py       # Platform dispatcher (Linux/Windows)
+        ├── evdev_hooks.py        # Linux: /dev/input/event* — Ctrl+C+C + cursor pos
+        ├── _win_hooks.py         # Windows: pynput Win32 keyboard hook
+        ├── selection_watcher.py  # Linux only: PRIMARY selection polling
+        ├── popup_button.py       # Linux only: selection sonrası küçük buton
+        └── popup_panel.py        # Frameless çeviri paneli (her iki OS'ta)
 ```
 
 ---
@@ -163,13 +211,15 @@ Kullanıcı `QT_QPA_PLATFORM=wayland python main.py` ile native Wayland'e zorlay
 
 ## Sorun giderme
 
-| Hata | Çözüm |
-|------|-------|
-| `ModuleNotFoundError: No module named 'deepl'` | Venv aktif değil. `source .venv/bin/activate` |
-| `[evdev] N device(s) refused (PermissionError)` | `input` grubunda değilsiniz. `sudo usermod -aG input $USER` + relogin |
-| `Kritik Hata: DEEPL_API_KEY bulunamadı` | `.env` dosyası eksik veya yanlış konumda |
-| Popup buton seçim sonrası rastgele konumda | `xdotool` kurulmamış olabilir, veya evdev fokus dışı çalışıyor — boşver, Ctrl+C+C kısayolu daima merkezde çalışır |
-| Excel dışa aktarma "openpyxl gereklidir" diyor | `pip install openpyxl` |
+| Hata | Platform | Çözüm |
+|------|----------|-------|
+| `ModuleNotFoundError: No module named 'deepl'` | Hepsi | Venv aktif değil. Linux: `source .venv/bin/activate` · Windows: `.\.venv\Scripts\Activate.ps1` |
+| `[evdev] N device(s) refused (PermissionError)` | Linux | `input` grubunda değilsiniz. `sudo usermod -aG input $USER` + relogin |
+| `[hotkey] pynput not installed` | Windows | `pip install pynput` |
+| `Kritik Hata: DEEPL_API_KEY bulunamadı` | Hepsi | `.env` dosyası eksik veya yanlış konumda |
+| Popup buton seçim sonrası rastgele konumda | Linux | `xdotool` kurulmamış olabilir; Ctrl+C+C kısayolu daima merkezde çalışır |
+| Ctrl+C+C tepki vermiyor | Windows | Antivirüs klavye hook'unu engellemiş olabilir; bir kez yönetici olarak çalıştırıp izin verin |
+| Excel dışa aktarma "openpyxl gereklidir" diyor | Hepsi | `pip install openpyxl` |
 
 ---
 

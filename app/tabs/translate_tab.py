@@ -11,77 +11,21 @@ from PyQt6.QtGui import QFont
 
 from app.APIs.deeplTranslate import DeeplAPI
 from app import styles
+from app.i18n import tr, lang_key
 from app.widgets import BoundedComboBox, style_combo_view
 
-# (code, display name)
-SOURCE_LANGUAGES: list[tuple[str | None, str]] = [
-    (None,   "Otomatik Algıla"),
-    ("AR",   "Arapça"),
-    ("BG",   "Bulgarca"),
-    ("CS",   "Çekçe"),
-    ("DA",   "Danca"),
-    ("DE",   "Almanca"),
-    ("EL",   "Yunanca"),
-    ("EN",   "İngilizce"),
-    ("ES",   "İspanyolca"),
-    ("ET",   "Estonca"),
-    ("FI",   "Fince"),
-    ("FR",   "Fransızca"),
-    ("HU",   "Macarca"),
-    ("ID",   "Endonezce"),
-    ("IT",   "İtalyanca"),
-    ("JA",   "Japonca"),
-    ("KO",   "Korece"),
-    ("LT",   "Litvanca"),
-    ("LV",   "Letonca"),
-    ("NB",   "Norveççe (Bokmål)"),
-    ("NL",   "Felemenkçe"),
-    ("PL",   "Lehçe"),
-    ("PT",   "Portekizce"),
-    ("RO",   "Romence"),
-    ("RU",   "Rusça"),
-    ("SK",   "Slovakça"),
-    ("SL",   "Slovence"),
-    ("SV",   "İsveççe"),
-    ("TR",   "Türkçe"),
-    ("UK",   "Ukraynaca"),
-    ("ZH",   "Çince"),
+# DeepL language codes — display names resolved at populate time via tr().
+SOURCE_CODES: list[str | None] = [
+    None, "AR", "BG", "CS", "DA", "DE", "EL", "EN", "ES", "ET", "FI", "FR",
+    "HU", "ID", "IT", "JA", "KO", "LT", "LV", "NB", "NL", "PL", "PT", "RO",
+    "RU", "SK", "SL", "SV", "TR", "UK", "ZH",
 ]
 
-TARGET_LANGUAGES: list[tuple[str, str]] = [
-    ("AR",      "Arapça"),
-    ("BG",      "Bulgarca"),
-    ("CS",      "Çekçe"),
-    ("DA",      "Danca"),
-    ("DE",      "Almanca"),
-    ("EL",      "Yunanca"),
-    ("EN-GB",   "İngilizce (İngiltere)"),
-    ("EN-US",   "İngilizce (Amerika)"),
-    ("ES",      "İspanyolca"),
-    ("ET",      "Estonca"),
-    ("FI",      "Fince"),
-    ("FR",      "Fransızca"),
-    ("HU",      "Macarca"),
-    ("ID",      "Endonezce"),
-    ("IT",      "İtalyanca"),
-    ("JA",      "Japonca"),
-    ("KO",      "Korece"),
-    ("LT",      "Litvanca"),
-    ("LV",      "Letonca"),
-    ("NB",      "Norveççe (Bokmål)"),
-    ("NL",      "Felemenkçe"),
-    ("PL",      "Lehçe"),
-    ("PT-BR",   "Portekizce (Brezilya)"),
-    ("PT-PT",   "Portekizce (Portekiz)"),
-    ("RO",      "Romence"),
-    ("RU",      "Rusça"),
-    ("SK",      "Slovakça"),
-    ("SL",      "Slovence"),
-    ("SV",      "İsveççe"),
-    ("TR",      "Türkçe"),
-    ("UK",      "Ukraynaca"),
-    ("ZH-HANS", "Çince (Basitleştirilmiş)"),
-    ("ZH-HANT", "Çince (Geleneksel)"),
+TARGET_CODES: list[str] = [
+    "AR", "BG", "CS", "DA", "DE", "EL", "EN-GB", "EN-US", "ES", "ET", "FI",
+    "FR", "HU", "ID", "IT", "JA", "KO", "LT", "LV", "NB", "NL", "PL",
+    "PT-BR", "PT-PT", "RO", "RU", "SK", "SL", "SV", "TR", "UK", "ZH-HANS",
+    "ZH-HANT",
 ]
 
 MAX_CHARS = 5000
@@ -136,7 +80,7 @@ class TranslateTab(QWidget):
         top = QHBoxLayout()
         top.setSpacing(10)
 
-        hdr = QLabel("🌐  Çeviri")
+        hdr = QLabel(tr("tr_header"))
         hdr.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         hdr.setStyleSheet(f"color: {styles.C['accent']}; background: transparent;")
         top.addWidget(hdr)
@@ -150,7 +94,7 @@ class TranslateTab(QWidget):
         self._swap_btn.setFixedSize(36, 36)
         self._swap_btn.setFont(QFont("Segoe UI", 14))
         self._swap_btn.setStyleSheet(styles.BTN_GHOST)
-        self._swap_btn.setToolTip("Dilleri değiştir")
+        self._swap_btn.setToolTip(tr("swap_tooltip"))
         top.addWidget(self._swap_btn)
 
         self._tgt_combo = BoundedComboBox()
@@ -170,7 +114,7 @@ class TranslateTab(QWidget):
         in_wrap.setSpacing(6)
 
         self._input = QTextEdit()
-        self._input.setPlaceholderText("Çevirmek için metin girin veya yapıştırın…")
+        self._input.setPlaceholderText(tr("tr_placeholder"))
         self._input.setAcceptRichText(False)
         in_wrap.addWidget(self._input, 1)
 
@@ -190,7 +134,7 @@ class TranslateTab(QWidget):
         out_wrap.addWidget(self._output, 1)
 
         out_bottom = QHBoxLayout()
-        self._save_btn = QPushButton("💾  Kaydet")
+        self._save_btn = QPushButton(tr("tr_save_btn"))
         self._save_btn.setStyleSheet(styles.BTN_SUCCESS)
         self._save_btn.setEnabled(False)
         out_bottom.addStretch(1)
@@ -201,12 +145,12 @@ class TranslateTab(QWidget):
         root.addLayout(panels, 1)
 
         # Status
-        self._status = QLabel("Yazmaya başlayın, otomatik çevirilecek.")
+        self._status = QLabel(tr("tr_status_start"))
         self._status.setStyleSheet(f"color: {styles.C['text_dim']}; font-size: 12px; background: transparent;")
         root.addWidget(self._status)
 
         if self._api_error:
-            self._status.setText(f"⚠ DeepL hatası: {self._api_error}")
+            self._status.setText(tr("tr_deepl_error", err=self._api_error))
             self._status.setStyleSheet(f"color: {styles.C['danger']}; font-size: 12px; background: transparent;")
 
         # Debounce timer
@@ -215,14 +159,14 @@ class TranslateTab(QWidget):
         self._timer.setInterval(500)
 
     def _populate_lang_boxes(self):
-        for code, name in SOURCE_LANGUAGES:
-            self._src_combo.addItem(name, code)
+        for code in SOURCE_CODES:
+            self._src_combo.addItem(tr(lang_key(code)), code)
 
-        for code, name in TARGET_LANGUAGES:
-            self._tgt_combo.addItem(name, code)
+        for code in TARGET_CODES:
+            self._tgt_combo.addItem(tr(lang_key(code)), code)
 
         # Default: auto-detect → TR
-        default_tgt = next((i for i, (c, _) in enumerate(TARGET_LANGUAGES) if c == "TR"), 0)
+        default_tgt = next((i for i, c in enumerate(TARGET_CODES) if c == "TR"), 0)
         self._tgt_combo.setCurrentIndex(default_tgt)
 
         # The global QSS rules for "QComboBox QAbstractItemView" don't always
@@ -268,7 +212,7 @@ class TranslateTab(QWidget):
             self._timer.stop()
             self._output.clear()
             self._save_btn.setEnabled(False)
-            self._status.setText("Yazmaya başlayın, otomatik çevirilecek.")
+            self._status.setText(tr("tr_status_start"))
 
     def _swap_languages(self):
         src_code = self._src_combo.currentData()
@@ -277,12 +221,12 @@ class TranslateTab(QWidget):
         # Swap the comboboxes (currentIndexChanged → _on_lang_changed → retranslate)
         if tgt_code:
             base = tgt_code.split("-")[0]
-            for i, (code, _) in enumerate(SOURCE_LANGUAGES):
+            for i, code in enumerate(SOURCE_CODES):
                 if code == base:
                     self._src_combo.setCurrentIndex(i)
                     break
         if src_code:
-            for i, (code, _) in enumerate(TARGET_LANGUAGES):
+            for i, code in enumerate(TARGET_CODES):
                 if code == src_code or code.startswith(src_code):
                     self._tgt_combo.setCurrentIndex(i)
                     break
@@ -313,7 +257,7 @@ class TranslateTab(QWidget):
         source = self._src_combo.currentData()
         target = self._tgt_combo.currentData()
 
-        self._status.setText("Çevriliyor…")
+        self._status.setText(tr("tr_status_translating"))
         self._save_btn.setEnabled(False)
 
         worker = _DeepLWorker(self._api, text, target, source, req_id)
@@ -327,13 +271,13 @@ class TranslateTab(QWidget):
             return  # stale response
         self._output.setPlainText(result)
         self._save_btn.setEnabled(True)
-        self._status.setText("Çeviri tamamlandı.")
+        self._status.setText(tr("tr_status_done"))
 
     def _on_error(self, msg: str, req_id: int):
         if req_id != self._req_id:
             return
-        self._output.setPlainText(f"Hata: {msg}")
-        self._status.setText("Çeviri hatası.")
+        self._output.setPlainText(tr("tr_error_prefix", msg=msg))
+        self._status.setText(tr("tr_status_error"))
 
     def _on_save(self):
         original = self._input.toPlainText().strip()
@@ -342,7 +286,24 @@ class TranslateTab(QWidget):
             return
         src_code = self._src_combo.currentData() or "AUTO"
         self.save_requested.emit(original, translation, src_code)
-        self._status.setText("✓ Kelimelerime kaydedildi.")
+        self._status.setText(tr("tr_status_saved"))
+
+    def reload_api(self):
+        """Re-instantiate DeeplAPI (e.g. after the user updated the key in Settings)."""
+        self._api_error = None
+        try:
+            self._api = DeeplAPI()
+            self._status.setText(tr("tr_status_start"))
+            self._status.setStyleSheet(
+                f"color: {styles.C['text_dim']}; font-size: 12px; background: transparent;"
+            )
+        except ValueError as e:
+            self._api = None
+            self._api_error = str(e)
+            self._status.setText(tr("tr_deepl_error", err=self._api_error))
+            self._status.setStyleSheet(
+                f"color: {styles.C['danger']}; font-size: 12px; background: transparent;"
+            )
 
     def set_text(self, text: str):
         """Set source text from external caller (e.g. popup)."""

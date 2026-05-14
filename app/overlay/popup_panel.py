@@ -13,6 +13,7 @@ from PyQt6.QtGui import QFont, QCursor, QGuiApplication
 from app.APIs.tureng import TurengAPI
 from app.APIs.deeplTranslate import DeeplAPI
 from app.widgets import BoundedComboBox
+from app.i18n import tr, lang_key
 
 
 # ---------------------------------------------------------------------------
@@ -27,77 +28,28 @@ MUTED    = "#6c7086"
 ACCENT   = "#cba6f7"
 
 # ---------------------------------------------------------------------------
-# Languages (compact subset; full list lives in translate_tab.py)
+# Language codes — display names resolved via tr() at populate time.
 # ---------------------------------------------------------------------------
-DEEPL_SOURCES: list[tuple[str | None, str]] = [
-    (None,   "Otomatik Algıla"),
-    ("AR",   "Arapça"),
-    ("BG",   "Bulgarca"),
-    ("CS",   "Çekçe"),
-    ("DA",   "Danca"),
-    ("DE",   "Almanca"),
-    ("EL",   "Yunanca"),
-    ("EN",   "İngilizce"),
-    ("ES",   "İspanyolca"),
-    ("ET",   "Estonca"),
-    ("FI",   "Fince"),
-    ("FR",   "Fransızca"),
-    ("HU",   "Macarca"),
-    ("ID",   "Endonezce"),
-    ("IT",   "İtalyanca"),
-    ("JA",   "Japonca"),
-    ("KO",   "Korece"),
-    ("LT",   "Litvanca"),
-    ("LV",   "Letonca"),
-    ("NB",   "Norveççe (Bokmål)"),
-    ("NL",   "Felemenkçe"),
-    ("PL",   "Lehçe"),
-    ("PT",   "Portekizce"),
-    ("RO",   "Romence"),
-    ("RU",   "Rusça"),
-    ("SK",   "Slovakça"),
-    ("SL",   "Slovence"),
-    ("SV",   "İsveççe"),
-    ("TR",   "Türkçe"),
-    ("UK",   "Ukraynaca"),
-    ("ZH",   "Çince"),
+DEEPL_SOURCE_CODES: list[str | None] = [
+    None, "AR", "BG", "CS", "DA", "DE", "EL", "EN", "ES", "ET", "FI", "FR",
+    "HU", "ID", "IT", "JA", "KO", "LT", "LV", "NB", "NL", "PL", "PT", "RO",
+    "RU", "SK", "SL", "SV", "TR", "UK", "ZH",
 ]
 
-DEEPL_TARGETS: list[tuple[str, str]] = [
-    ("AR",      "Arapça"),
-    ("BG",      "Bulgarca"),
-    ("CS",      "Çekçe"),
-    ("DA",      "Danca"),
-    ("DE",      "Almanca"),
-    ("EL",      "Yunanca"),
-    ("EN-GB",   "İngilizce (İngiltere)"),
-    ("EN-US",   "İngilizce (Amerika)"),
-    ("ES",      "İspanyolca"),
-    ("ET",      "Estonca"),
-    ("FI",      "Fince"),
-    ("FR",      "Fransızca"),
-    ("HU",      "Macarca"),
-    ("ID",      "Endonezce"),
-    ("IT",      "İtalyanca"),
-    ("JA",      "Japonca"),
-    ("KO",      "Korece"),
-    ("LT",      "Litvanca"),
-    ("LV",      "Letonca"),
-    ("NB",      "Norveççe (Bokmål)"),
-    ("NL",      "Felemenkçe"),
-    ("PL",      "Lehçe"),
-    ("PT-BR",   "Portekizce (Brezilya)"),
-    ("PT-PT",   "Portekizce (Portekiz)"),
-    ("RO",      "Romence"),
-    ("RU",      "Rusça"),
-    ("SK",      "Slovakça"),
-    ("SL",      "Slovence"),
-    ("SV",      "İsveççe"),
-    ("TR",      "Türkçe"),
-    ("UK",      "Ukraynaca"),
-    ("ZH-HANS", "Çince (Basitleştirilmiş)"),
-    ("ZH-HANT", "Çince (Geleneksel)"),
+DEEPL_TARGET_CODES: list[str] = [
+    "AR", "BG", "CS", "DA", "DE", "EL", "EN-GB", "EN-US", "ES", "ET", "FI",
+    "FR", "HU", "ID", "IT", "JA", "KO", "LT", "LV", "NB", "NL", "PL",
+    "PT-BR", "PT-PT", "RO", "RU", "SK", "SL", "SV", "TR", "UK", "ZH-HANS",
+    "ZH-HANT",
 ]
+
+
+def _deepl_sources() -> list[tuple[str | None, str]]:
+    return [(c, tr(lang_key(c))) for c in DEEPL_SOURCE_CODES]
+
+
+def _deepl_targets() -> list[tuple[str, str]]:
+    return [(c, tr(lang_key(c))) for c in DEEPL_TARGET_CODES]
 
 
 # ---------------------------------------------------------------------------
@@ -163,8 +115,8 @@ class _TitleBar(QWidget):
         h.addWidget(icon)
         h.addSpacing(4)
 
-        self._tab_translator = self._make_tab("⇄", "Translator")
-        self._tab_dictionary = self._make_tab("📖", "Dictionary")
+        self._tab_translator = self._make_tab("⇄", tr("popup_translator"))
+        self._tab_dictionary = self._make_tab("📖", tr("popup_dictionary"))
         h.addWidget(self._tab_translator)
         h.addWidget(self._tab_dictionary)
         h.addStretch(1)
@@ -307,7 +259,7 @@ class _TextArea(QWidget):
         self._copy = QPushButton("📋", self)
         self._copy.setFixedSize(26, 26)
         self._copy.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._copy.setToolTip("Kopyala")
+        self._copy.setToolTip(tr("copy_tooltip"))
         self._copy.setStyleSheet(f"""
             QPushButton {{
                 background-color: {SURFACE2};
@@ -549,13 +501,13 @@ class PopupPanel(QWidget):
         lang_row = QHBoxLayout()
         lang_row.setSpacing(6)
 
-        self._tr_src = _make_combo(DEEPL_SOURCES, default_data=None)
-        self._tr_tgt = _make_combo(DEEPL_TARGETS, default_data="TR")
+        self._tr_src = _make_combo(_deepl_sources(), default_data=None)
+        self._tr_tgt = _make_combo(_deepl_targets(), default_data="TR")
 
         swap = QPushButton("⇄")
         swap.setFixedSize(30, 30)
         swap.setCursor(Qt.CursorShape.PointingHandCursor)
-        swap.setToolTip("Dilleri değiştir")
+        swap.setToolTip(tr("swap_tooltip"))
         swap.setStyleSheet(f"""
             QPushButton {{
                 background-color: {SURFACE};
@@ -580,16 +532,16 @@ class PopupPanel(QWidget):
         v.addLayout(lang_row)
 
         # Text area
-        self._tr_area = _TextArea(read_only=True, placeholder="Çeviri burada görünecek…")
+        self._tr_area = _TextArea(read_only=True, placeholder=tr("popup_tr_placeholder"))
         v.addWidget(self._tr_area, 1)
 
         # Bottom bar
         bottom = self._make_bottom_bar()
-        edit_btn = QPushButton("Edit")
+        edit_btn = QPushButton(tr("popup_edit"))
         edit_btn.setStyleSheet(self._ghost_btn_style())
         edit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         edit_btn.clicked.connect(self._on_edit_clicked)
-        save_btn = QPushButton("Save")
+        save_btn = QPushButton(tr("popup_save"))
         save_btn.setStyleSheet(self._primary_btn_style())
         save_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         save_btn.clicked.connect(self._save_from_translator)
@@ -622,15 +574,17 @@ class PopupPanel(QWidget):
         lang_row = QHBoxLayout()
         lang_row.setSpacing(6)
 
-        self._dc_src = _make_combo([("auto", "Otomatik"), ("en", "İngilizce"), ("tr", "Türkçe")],
-                                   default_data="auto")
-        self._dc_tgt = _make_combo([("auto", "Otomatik"), ("tr", "Türkçe"), ("en", "İngilizce")],
-                                   default_data="auto")
+        self._dc_src = _make_combo(
+            [("auto", tr("lang_auto")), ("en", tr("lang_EN")), ("tr", tr("lang_TR"))],
+            default_data="auto")
+        self._dc_tgt = _make_combo(
+            [("auto", tr("lang_auto")), ("tr", tr("lang_TR")), ("en", tr("lang_EN"))],
+            default_data="auto")
 
         swap = QPushButton("⇄")
         swap.setFixedSize(30, 30)
         swap.setCursor(Qt.CursorShape.PointingHandCursor)
-        swap.setToolTip("Dilleri değiştir")
+        swap.setToolTip(tr("swap_tooltip"))
         swap.setStyleSheet(f"""
             QPushButton {{
                 background-color: {SURFACE};
@@ -654,12 +608,12 @@ class PopupPanel(QWidget):
         v.addLayout(lang_row)
 
         # Text area (read-only, results)
-        self._dc_area = _TextArea(read_only=True, placeholder="Sözlük sonucu burada görünecek…")
+        self._dc_area = _TextArea(read_only=True, placeholder=tr("popup_dc_placeholder"))
         v.addWidget(self._dc_area, 1)
 
         # Bottom bar — only Save
         bottom = self._make_bottom_bar()
-        save_btn = QPushButton("Save")
+        save_btn = QPushButton(tr("popup_save"))
         save_btn.setStyleSheet(self._primary_btn_style())
         save_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         save_btn.clicked.connect(self._save_from_dictionary)
@@ -724,6 +678,10 @@ class PopupPanel(QWidget):
     # ==================================================================
     # PUBLIC API
     # ==================================================================
+    def set_deepl_api(self, api: DeeplAPI | None):
+        """Swap the active DeepL client (e.g. after the user updated the key)."""
+        self._deepl_api = api
+
     def show_for(self, text: str, x: int, y: int):
         """Show popup near (x, y) with the given selected text."""
         self._original_text   = text
@@ -734,12 +692,12 @@ class PopupPanel(QWidget):
         # Auto-pick tab and run lookup
         if self._is_phrase:
             self._set_tab(0)
-            self._tr_area.text.setPlainText("Çevriliyor…")
+            self._tr_area.text.setPlainText(tr("popup_translating"))
             self._tr_save.setEnabled(False)
             self._run_translate()
         else:
             self._set_tab(1)
-            self._dc_area.text.setPlainText(f"'{text}' aranıyor…")
+            self._dc_area.text.setPlainText(tr("popup_searching_for", text=text))
             self._dc_save.setEnabled(False)
             self._run_dictionary(text)
 
@@ -791,7 +749,7 @@ class PopupPanel(QWidget):
         target = self._tr_tgt.currentData() or "TR"
         source = self._tr_src.currentData()
 
-        self._tr_area.text.setPlainText("Çevriliyor…")
+        self._tr_area.text.setPlainText(tr("popup_translating"))
         self._tr_save.setEnabled(False)
 
         worker = _DeepLWorker(self._deepl_api, self._original_text, target, source)
@@ -833,7 +791,7 @@ class PopupPanel(QWidget):
     def _on_dict_done(self, results: list):
         self._dict_results = results
         if not results or (len(results) == 1 and results[0].startswith("Hata:")):
-            msg = results[0] if results else "Sonuç bulunamadı."
+            msg = results[0] if results else tr("popup_no_result")
             self._dc_area.text.setPlainText(msg)
             self._dc_save.setEnabled(False)
             return
@@ -857,13 +815,13 @@ class PopupPanel(QWidget):
             return
         src = self._tr_src.currentData() or "AUTO"
         self.save_requested.emit(self._original_text, self._translated_text, src)
-        self._flash_button(self._tr_save, "✓ Kaydedildi")
+        self._flash_button(self._tr_save, tr("popup_saved"))
 
     def _save_from_dictionary(self):
         if not self._translated_text or not self._original_text:
             return
         self.save_requested.emit(self._original_text, self._translated_text, "TR-EN")
-        self._flash_button(self._dc_save, "✓ Kaydedildi")
+        self._flash_button(self._dc_save, tr("popup_saved"))
 
     def _flash_button(self, btn: QPushButton, label: str):
         original = btn.text()
@@ -872,9 +830,13 @@ class PopupPanel(QWidget):
         QTimer.singleShot(1500, lambda: (btn.setText(original), btn.setEnabled(True)))
 
     def _on_worker_error(self, msg: str):
+        translating = tr("popup_translating")
         for area in (self._tr_area, self._dc_area):
-            if area.text.toPlainText().endswith("aranıyor…") or area.text.toPlainText() == "Çevriliyor…":
-                area.text.setPlainText(f"Hata: {msg}")
+            current = area.text.toPlainText()
+            # "Searching '<word>'…" or "Translating…" are the placeholders;
+            # both end with an ellipsis so we use that as the marker.
+            if current == translating or current.endswith("…"):
+                area.text.setPlainText(tr("popup_error", msg=msg))
 
     # ==================================================================
     # Positioning

@@ -1,6 +1,7 @@
 import os
+import sys
 
-# Run as an X11 app (via XWayland on Wayland desktops).
+# On Linux, run as an X11 app (via XWayland on Wayland desktops).
 # Wayland's xdg_popup protocol requires a visible mapped parent surface for
 # every overlay window, making global floating overlays impossible without
 # layer-shell. XWayland removes all these restrictions:
@@ -9,9 +10,10 @@ import os
 #   - PRIMARY selection is available via Qt's X11 clipboard
 # KDE Plasma 6 starts XWayland on demand; no manual setup is required.
 # Override by setting QT_QPA_PLATFORM=wayland in the environment.
-os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
+# Windows uses its native Qt platform plugin — no override needed.
+if sys.platform.startswith("linux"):
+    os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
 
-import sys
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QFont
 

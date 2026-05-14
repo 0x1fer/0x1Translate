@@ -47,6 +47,7 @@ words.db
 *.sqlite
 *.sqlite3
 *.db-journal
+settings.json
 
 # ---------------------------------------------------------------------------
 # IDE / editor

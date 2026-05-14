@@ -3,6 +3,7 @@ from PyQt6.QtCore import Qt, QTimer, QPoint, pyqtSignal
 from PyQt6.QtGui import QFont
 
 from app import styles
+from app.i18n import tr
 
 
 class PopupButton(QWidget):
@@ -40,7 +41,7 @@ class PopupButton(QWidget):
         self._btn = QPushButton("🌐")
         self._btn.setFixedSize(40, 40)
         self._btn.setFont(QFont("Segoe UI", 16))
-        self._btn.setToolTip("Çevir")
+        self._btn.setToolTip(tr("popup_btn_tooltip"))
         self._btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: {styles.C['accent']};

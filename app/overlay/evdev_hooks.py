@@ -28,6 +28,8 @@ from typing import Optional
 from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtGui import QGuiApplication
 
+from app import settings as _settings
+
 
 # ---------------------------------------------------------------------------
 # Module-level singleton (created by init(), accessed via instance())
@@ -55,6 +57,12 @@ def shutdown():
         _instance = None
 
 
+def reload_shortcut(parent=None):
+    """Restart the listener so it picks up the new shortcut from settings.json."""
+    shutdown()
+    return init(parent)
+
+
 def get_cursor_pos() -> tuple[int, int]:
     """Current cursor position. Prefers our evdev tracker; falls back to xdotool."""
     if _instance is not None and _instance.is_tracking():
@@ -80,6 +88,10 @@ class EvdevHooks(QThread):
         self._sx_min, self._sy_min = screen.left(),  screen.top()
         self._sx_max, self._sy_max = screen.right(), screen.bottom()
 
+        sc = _settings.load().get("shortcut", {})
+        self._modifier_name = sc.get("modifier", "ctrl")
+        self._trigger_letter = (sc.get("trigger_key") or "C").upper()[:1] or "C"
+
     # ------------------------------------------------------------------
     def stop(self):
         self._running = False
@@ -101,6 +113,10 @@ class EvdevHooks(QThread):
                   "Install via 'pip install evdev' or pacman.", file=sys.stderr)
             return
 
+        modifier_codes = _modifier_keycodes(self._modifier_name, ecodes)
+        trigger_code = _trigger_keycode(self._trigger_letter, ecodes)
+        modifier_probe = next(iter(modifier_codes))   # any one is enough to identify keyboards
+
         keyboards: list = []
         mice:      list = []
         perm_err = 0
@@ -110,7 +126,7 @@ class EvdevHooks(QThread):
                 caps = dev.capabilities()
 
                 keys = caps.get(ecodes.EV_KEY, [])
-                if ecodes.KEY_C in keys and ecodes.KEY_LEFTCTRL in keys:
+                if trigger_code in keys and modifier_probe in keys:
                     keyboards.append(dev)
 
                 rels = caps.get(ecodes.EV_REL, [])
@@ -134,11 +150,13 @@ class EvdevHooks(QThread):
                 print("[evdev] no usable input devices found.", file=sys.stderr)
             return
 
+        shortcut_label = f"{self._modifier_name.capitalize()}+{self._trigger_letter}+{self._trigger_letter}"
         print(f"[evdev] watching {len(keyboards)} keyboard(s) "
-              f"and {len(mice)} mouse device(s)", file=sys.stderr)
+              f"and {len(mice)} mouse device(s); hotkey {shortcut_label}",
+              file=sys.stderr)
         self._tracking = True
-        ctrl_held = False
-        last_c_ms = 0.0
+        modifier_held = False
+        last_trigger_ms = 0.0
 
         while self._running:
             try:
@@ -155,17 +173,17 @@ class EvdevHooks(QThread):
                                     self._y = _clamp(self._y + val, self._sy_min, self._sy_max)
 
                             elif t == ecodes.EV_KEY:
-                                if code in (ecodes.KEY_LEFTCTRL, ecodes.KEY_RIGHTCTRL):
-                                    ctrl_held = (val != 0)
-                                elif code == ecodes.KEY_C and val == 1 and ctrl_held:
+                                if code in modifier_codes:
+                                    modifier_held = (val != 0)
+                                elif code == trigger_code and val == 1 and modifier_held:
                                     now_ms = time.monotonic() * 1000.0
-                                    if last_c_ms and (now_ms - last_c_ms) < self.DOUBLE_PRESS_MS:
+                                    if last_trigger_ms and (now_ms - last_trigger_ms) < self.DOUBLE_PRESS_MS:
                                         import sys
-                                        print("[evdev] Ctrl+C+C detected", file=sys.stderr)
+                                        print(f"[evdev] {shortcut_label} detected", file=sys.stderr)
                                         self.double_ctrl_c.emit()
-                                        last_c_ms = 0.0
+                                        last_trigger_ms = 0.0
                                     else:
-                                        last_c_ms = now_ms
+                                        last_trigger_ms = now_ms
                     except BlockingIOError:
                         pass
                     except OSError:
@@ -180,6 +198,19 @@ class EvdevHooks(QThread):
 
 
 # ---------------------------------------------------------------------------
+def _modifier_keycodes(name: str, ecodes) -> set[int]:
+    name = (name or "ctrl").lower()
+    if name == "alt":
+        return {ecodes.KEY_LEFTALT, ecodes.KEY_RIGHTALT}
+    if name == "shift":
+        return {ecodes.KEY_LEFTSHIFT, ecodes.KEY_RIGHTSHIFT}
+    return {ecodes.KEY_LEFTCTRL, ecodes.KEY_RIGHTCTRL}
+
+
+def _trigger_keycode(letter: str, ecodes) -> int:
+    return getattr(ecodes, f"KEY_{(letter or 'C').upper()}", ecodes.KEY_C)
+
+
 def _clamp(v: int, lo: int, hi: int) -> int:
     return lo if v < lo else (hi if v > hi else v)
 
