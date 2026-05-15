@@ -16,7 +16,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from app.config import CONFIG
+from app import config
 
 
 DEFAULTS: dict[str, Any] = {
@@ -30,8 +30,7 @@ DEFAULTS: dict[str, Any] = {
 
 
 def path() -> Path:
-    db_path: Path = CONFIG["db_path"]
-    return db_path.parent / "settings.json"
+    return config.data_root() / "settings.json"
 
 
 def load() -> dict:

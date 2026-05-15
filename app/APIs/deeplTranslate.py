@@ -3,7 +3,7 @@ import os
 import deepl
 from dotenv import load_dotenv
 
-from app import settings as _settings
+from app import config as _config, settings as _settings
 from app.i18n import tr
 
 
@@ -15,6 +15,9 @@ class DeeplAPI:
             if stored:
                 api_key = stored
             else:
+                # Look for .env next to user data (frozen apps don't share
+                # cwd with the project) AND fall back to default search.
+                load_dotenv(dotenv_path=_config.data_root() / ".env")
                 load_dotenv()
                 api_key = os.getenv("DEEPL_API_KEY")
         self.api_key = api_key

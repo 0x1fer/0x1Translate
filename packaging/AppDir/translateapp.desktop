@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=TranslateApp
+GenericName=Translator
+Comment=Tureng dictionary + DeepL translation with system-wide overlay
+Exec=TranslateApp
+Icon=translateapp
+Terminal=false
+Categories=Utility;Dictionary;
+Keywords=translate;dictionary;deepl;tureng;translator;
+StartupWMClass=TranslateApp

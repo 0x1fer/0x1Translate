@@ -17,14 +17,16 @@ if sys.platform.startswith("linux"):
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QFont
 
-from app.config import CONFIG
+from app import config, styles
 from app.db.database import Database
 from app.main_window import MainWindow
-from app import styles
 
 
 def main():
     app = QApplication(sys.argv)
+    # Set Application/Organization name BEFORE any data path is resolved —
+    # config.data_root() reads QStandardPaths.AppDataLocation, which depends
+    # on these names when the app is frozen by PyInstaller.
     app.setApplicationName("TranslateApp")
     app.setOrganizationName("TranslateApp")
     app.setQuitOnLastWindowClosed(False)
@@ -32,7 +34,7 @@ def main():
     app.setFont(QFont("Segoe UI", 11))
     app.setStyleSheet(styles.MAIN)
 
-    db = Database(CONFIG["db_path"])
+    db = Database(config.db_path())
 
     window = MainWindow(db)
     window.show()

@@ -1,0 +1,7 @@
+# Build-time dependencies (NOT needed to run the app).
+#
+# Install alongside the runtime deps when building artifacts:
+#   pip install -r requirements.txt -r requirements-dev.txt
+
+pyinstaller>=6.5
+pillow>=10            # scripts/make_icons.py
